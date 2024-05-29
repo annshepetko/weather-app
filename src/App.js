@@ -10,7 +10,7 @@ function App() {
 
     const searchLocation = (event) => {
         if (event.key === 'Enter') {
-            const url = `http://api.weatherapi.com/v1/forecast.json?key=07d684643ec449e9bf6230438242805&q=${location}&days=10&aqi=no&alerts=yes`;
+            const url = `https://api.weatherapi.com/v1/forecast.json?key=07d684643ec449e9bf6230438242805&q=${location}&days=10&aqi=no&alerts=yes`;
             axios.get(url).then((response) => {
                 if (response.data.error) {
                     setError('Місто не знайдено. Будь ласка, спробуйте ще раз.');
