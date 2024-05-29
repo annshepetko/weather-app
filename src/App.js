@@ -1,67 +1,76 @@
-import React, { useState } from 'react'
-import axios from 'axios'
+import React, { useState } from 'react';
+import axios from 'axios';
+
+
 
 function App() {
-  const [data, setData] = useState({})
-  const [location, setLocation] = useState('')
+    const [data, setData] = useState({});
+    const [location, setLocation] = useState('');
+    const [error, setError] = useState('');
 
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=imperial&appid=895284fb2d2c50a520ea537456963d9c`
-
-  const searchLocation = (event) => {
-    if (event.key === 'Enter') {
-      axios.get(url).then((response) => {
-        setData(response.data)
-        console.log(response.data)
-      })
-      setLocation('')
-    }
-  }
-
-  return (
-    <div className="app">
-      <div className="search">
-        <input
-          value={location}
-          onChange={event => setLocation(event.target.value)}
-          onKeyPress={searchLocation}
-          placeholder='Enter Location'
-          type="text" />
-      </div>
-      <div className="container">
-        <div className="top">
-          <div className="location">
-            <p>{data.name}</p>
-          </div>
-          <div className="temp">
-            {data.main ? <h1>{data.main.temp.toFixed()}°F</h1> : null}
-          </div>
-          <div className="description">
-            {data.weather ? <p>{data.weather[0].main}</p> : null}
-          </div>
-        </div>
-
-        {data.name !== undefined &&
-          <div className="bottom">
-            <div className="feels">
-              {data.main ? <p className='bold'>{data.main.feels_like.toFixed()}°F</p> : null}
-              <p>Feels Like</p>
-            </div>
-            <div className="humidity">
-              {data.main ? <p className='bold'>{data.main.humidity}%</p> : null}
-              <p>Humidity</p>
-            </div>
-            <div className="wind">
-              {data.wind ? <p className='bold'>{data.wind.speed.toFixed()} MPH</p> : null}
-              <p>Wind Speed</p>
-            </div>
-          </div>
+    const searchLocation = (event) => {
+        if (event.key === 'Enter') {
+            const url = `http://api.weatherapi.com/v1/forecast.json?key=07d684643ec449e9bf6230438242805&q=${location}&days=10&aqi=no&alerts=yes`;
+            axios.get(url).then((response) => {
+                if (response.data.error) {
+                    setError('Місто не знайдено. Будь ласка, спробуйте ще раз.');
+                } else {
+                    setData(response.data);
+                    setError('');
+                }
+            }).catch(error => {
+                setError('Сталася помилка. Будь ласка, спробуйте ще раз пізніше.');
+            });
+            setLocation('');
         }
+    };
 
+    const closeErrorMessage = () => {
+        setError('');
+    };
 
-
-      </div>
-    </div>
-  );
+    return (
+        <div className="app">
+            <div className="search">
+                <input
+                    value={location}
+                    onChange={event => setLocation(event.target.value)}
+                    onKeyPress={searchLocation}
+                    placeholder='Enter Location'
+                    type="text"
+                />
+            </div>
+            <div className={`error-message ${error && 'show'}`} onClick={closeErrorMessage}>
+                <p>{error}</p>
+            </div>
+            {data.location && (
+                <div className={`weather-info`} data-weather={data.current.condition.text}>
+                    <div className="location">
+                        <p>{data.location.name}, {data.location.country}</p>
+                    </div>
+                    <div className="current">
+                        <div className="temp">
+                            <h1>{data.current.temp_c.toFixed()}°C</h1>
+                        </div>
+                    </div>
+                    <div className="forecast">
+                        {data.forecast.forecastday.map(day => (
+                            <div key={day.date} className="card">
+                                <div className="date">{day.date}</div>
+                                <div className="temp">
+                                    <p>Max: {day.day.maxtemp_c.toFixed()}°C</p>
+                                    <p>Min: {day.day.mintemp_c.toFixed()}°C</p>
+                                </div>
+                                <div className="condition">
+                                    <p>{day.day.condition.text}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 }
 
 export default App;
